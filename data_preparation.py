@@ -62,23 +62,19 @@ def load_coco_subset(num_samples: int, data_dir: str, cache_dir: str) -> List[Di
     print(f"Loading COCO dataset (target: {num_samples} samples)...")
     
     # Load COCO captions from HuggingFace
-    dataset = load_dataset("HuggingFaceM4/COCO", split="train", cache_dir=cache_dir)
-    
-    # Sample subset
+    dataset = load_dataset("jxie/coco_captions", split="train", cache_dir=cache_dir)
+
+   # Sample subset
     if len(dataset) > num_samples:
         indices = random.sample(range(len(dataset)), num_samples)
         dataset = dataset.select(indices)
     
     data = []
     for idx, item in enumerate(tqdm(dataset, desc="Processing COCO")):
-        # Each COCO image has multiple captions, take the first one
-        captions = item.get('sentences', {}).get('raw', [])
-        if not captions:
-            continue
         
         data.append({
             'image': item['image'],
-            'caption': captions[0],
+            'caption': item['caption'],
             'image_id': idx,
             'is_ood': False
         })

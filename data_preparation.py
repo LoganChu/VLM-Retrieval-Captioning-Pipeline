@@ -117,15 +117,17 @@ def create_ood_split(data: List[Dict], num_ood: int, seed: int) -> List[Dict]:
     # Select random samples to distort
     ood_indices = random.sample(range(len(data)), min(num_ood, len(data)))
     
+    # Assign unique integer IDs for OOD samples starting after existing indices
+    base_id = len(data)
     ood_data = []
-    for idx in tqdm(ood_indices, desc="Generating OOD"):
+    for i, idx in enumerate(tqdm(ood_indices, desc="Generating OOD")):
         original = data[idx]
         distorted_image = create_ood_distortions(original['image'])
         
         ood_data.append({
             'image': distorted_image,
             'caption': original['caption'],
-            'image_id': f"ood_{original['image_id']}",
+            'image_id': base_id + i,
             'is_ood': True,
             'original_id': original['image_id']
         })

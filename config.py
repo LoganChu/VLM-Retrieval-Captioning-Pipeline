@@ -24,46 +24,36 @@ class HardwareConfig:
     def get_clip_batch_size(self) -> int:
         if self.device_type == "rtx5000_ada":
             return 96  # 32GB VRAM - can handle larger batches
-        elif self.device_type == "a5000":
-            return 64
         else:
-            return 16
+            print("No RTX 5000 Ada found")
     
     def get_image_size(self) -> int:
         if self.device_type == "rtx5000_ada":
-            return 336  # Ada architecture supports larger images efficiently
-        elif self.device_type == "a5000":
-            return 224
+            return 224  # Ada architecture supports larger images efficiently
         else:
-            return 192
+            print("No RTX 5000 Ada found")
     
     def get_linear_probe_bs(self) -> int:
         if self.device_type == "rtx5000_ada":
             return 128  # Double the A5000
-        elif self.device_type == "a5000":
-            return 64
         else:
-            return 16
+            print("No RTX 5000 Ada found")
     
     def get_captioner_bs(self) -> int:
         if self.device_type == "rtx5000_ada":
             return 48  # 50% more than A5000
-        elif self.device_type == "a5000":
-            return 32
         else:
-            return 10
+            print("No RTX 5000 Ada found")
     
-    def use_gradient_checkpointing(self) -> bool:
-        return self.device_type == "rtx3070"  # Not needed for RTX 5000 Ada
     
     def get_num_workers(self) -> int:
         """Data loader workers - Ada benefits from more parallelism"""
-        return 8 if self.device_type == "rtx5000_ada" else 4
+        return 8 
 
 @dataclass
 class ModelConfig:
     """Model architecture configuration"""
-    clip_model: str = "openai/clip-vit-base-patch32"
+    clip_model: str =  "openai/clip-vit-base-patch16"
     clip_embed_dim: int = 512
     
     # Linear probe
@@ -128,22 +118,6 @@ class Config:
             self.model.lora_alpha = 32
             self.model.use_flash_attention = True
             self.model.use_tf32 = True
-        elif device_type == "a5000":
-            # A5000 (24GB) - Balanced configuration
-            self.data.image_size = 224
-            self.model.decoder_layers = 4
-            self.model.decoder_hidden = 512
-            self.model.decoder_heads = 8
-            self.model.lora_r = 8
-            self.model.lora_alpha = 16
-        elif device_type == "rtx3070":
-            # RTX 3070 (8GB) - Memory-constrained configuration
-            self.data.image_size = 192
-            self.model.decoder_layers = 2
-            self.model.decoder_hidden = 384
-            self.model.decoder_heads = 6
-            self.model.lora_r = 4
-            self.model.lora_alpha = 8
         
         # Device setup
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

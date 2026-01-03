@@ -191,7 +191,7 @@ class CLIPRetrieval:
         # Compute metrics
         is_ood_tensor = torch.tensor(is_ood)
         metrics = self.compute_retrieval_metrics(similarity, is_ood_tensor)
-        
+        print(metrics.keys())
         # Print results
         print(f"\nResults on {split_name}:")
         print(f"  Recall@1:  {metrics['recall@1']:.2f}%")

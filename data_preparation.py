@@ -25,10 +25,9 @@ class ImageCaptionDataset(Dataset):
         item = self.data[idx]
         image = item['image']
         caption = item['caption']
-        
+        image = image.convert("RGB")
         if self.transform:
-            image = self.transform(image)
-        
+            image = self.transform(image)        
         return {
             'image': image,
             'caption': caption,
@@ -44,6 +43,8 @@ def create_ood_distortions(image: Image.Image) -> Image.Image:
     - Brightness changes
     """
     # Random blur
+    print(type(image))
+    print(image.mode)
     blur_radius = random.uniform(2.0, 5.0)
     image = image.filter(ImageFilter.GaussianBlur(radius=blur_radius))
     
@@ -54,7 +55,8 @@ def create_ood_distortions(image: Image.Image) -> Image.Image:
     # Brightness shift
     enhancer = ImageEnhance.Brightness(image)
     image = enhancer.enhance(random.uniform(0.6, 0.9))  # Darken
-    
+    print(image.size)
+    print(image.mode)    
     return image
 
 def load_coco_subset(num_samples: int, data_dir: str, cache_dir: str) -> List[Dict]:
@@ -71,7 +73,6 @@ def load_coco_subset(num_samples: int, data_dir: str, cache_dir: str) -> List[Di
     
     data = []
     for idx, item in enumerate(tqdm(dataset, desc="Processing COCO")):
-        
         data.append({
             'image': item['image'],
             'caption': item['caption'],
@@ -158,9 +159,7 @@ def prepare_datasets(config) -> Tuple[List, List, List]:
             config.data.data_dir,
             config.data.cache_dir
         )
-    
     print(f"\nLoaded {len(data)} samples")
-    
     # Create OOD split
     ood_data = create_ood_split(data, config.data.num_ood, config.experiment.seeds[0])
     
